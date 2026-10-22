@@ -1,0 +1,16 @@
+name: Build Knight Saver APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get source code
+        uses: actions/checkout@v4
+
+      - name: Check project file
+        run: |
+          ls -la
+          test -f main.py
