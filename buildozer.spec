@@ -9,14 +9,14 @@ requirements = python3,kivy==2.3.0
 orientation = landscape
 
 [buildozer]
-log_level = 2
+log_level = 1
 
 [buildozer:android]
 android.api = 33
 android.minapi = 21
-android.ndk = 25b
+android.ndk = 28c
 android.sdk = 33
 android.accept_sdk_license_agreement = True
-# Ye line Aidl error ko khatam karegi:
 android.build_tools_version = 33.0.2
+p4a.branch = master
 p4a.bootstrap = sdl2
