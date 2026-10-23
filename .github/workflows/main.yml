@@ -23,19 +23,10 @@ jobs:
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Fix Aidl & Licenses
+      - name: Build APK
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          echo "y" | buildozer android debug || true
-          SDKMANAGER=$(find ~/.buildozer -name "sdkmanager" | head -n 1)
-          echo "Found SDK at $SDKMANAGER"
-          yes | $SDKMANAGER --licenses || true
-          yes | $SDKMANAGER --sdk_root=$(dirname $(dirname $SDKMANAGER)))/.. "build-tools;33.0.2" "platform-tools" || true
-          ls /home/runner/.buildozer/android/platform/android-sdk/build-tools/
-
-      - name: Build APK
-        run: |
           buildozer android debug
 
       - name: Upload APK
