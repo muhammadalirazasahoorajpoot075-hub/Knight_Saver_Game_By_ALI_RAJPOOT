@@ -16,17 +16,26 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y openjdk-17-jdk python3-pip zip unzip libffi-dev libssl-dev
+          sudo apt install -y openjdk-17-jdk zip unzip libffi-dev libssl-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Build APK
+      - name: Fix Aidl & Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
+          echo "y" | buildozer android debug || true
+          SDKMANAGER=$(find ~/.buildozer -name "sdkmanager" | head -n 1)
+          echo "Found SDK at $SDKMANAGER"
+          yes | $SDKMANAGER --licenses || true
+          yes | $SDKMANAGER --sdk_root=$(dirname $(dirname $SDKMANAGER)))/.. "build-tools;33.0.2" "platform-tools" || true
+          ls /home/runner/.buildozer/android/platform/android-sdk/build-tools/
+
+      - name: Build APK
+        run: |
           buildozer android debug
 
       - name: Upload APK
