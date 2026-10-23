@@ -16,25 +16,30 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y openjdk-17-jdk zip unzip libffi-dev libssl-dev
+          sudo apt install -y openjdk-17-jdk zip unzip libffi-dev libssl-dev libbz2-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Build APK
+      - name: Build APK - Auto Fix
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          # Pehle ek bar SDK download karne do
-          buildozer android debug || true
-          # Ab license accept karo aur 37 wala build-tools install karo
-          SDKMANAGER=$(find ~/.buildozer -name sdkmanager | head -n 1)
-          echo "Found: $SDKMANAGER"
+          # 1st run - SDK download karne ke liye (fail hoga to ignore)
+          yes | buildozer android debug || true
+          
+          # Sahi wala sdkmanager ka rasta
+          SDKMANAGER="$HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/bin/sdkmanager"
+          echo "Using: $SDKMANAGER"
+          chmod +x $SDKMANAGER
+          
+          # License accept + Build-tools 37 install
           yes | $SDKMANAGER --licenses
-          $SDKMANAGER --install "build-tools;37.0.0" "platform-tools"
-          # Ab final build
+          $SDKMANAGER --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools"
+          
+          # 2nd run - Final APK
           buildozer android debug
 
       - name: Upload APK
