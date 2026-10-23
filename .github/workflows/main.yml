@@ -6,30 +6,41 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Setup Python 3.10
         uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
-      - name: Install System Packages
+      - name: Install Dependencies
         run: |
           sudo apt update
           sudo apt install -y openjdk-17-jdk python3-pip zip unzip libffi-dev libssl-dev
 
-      - name: Install Build Tools
+      - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Build APK (This will take 15-20 mins first time)
+      - name: Fix Aidl & License Issue (Final Fix)
+        run: |
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
+          # Pehli baar SDK download karne do, license error ayega to ignore karo
+          buildozer android debug || true
+          # Ab usi SDK ka license accept karo
+          SDKMANAGER=$(find ~/.buildozer -name sdkmanager -type f | head -n 1)
+          echo "Found sdkmanager at: $SDKMANAGER"
+          yes | $SDKMANAGER --licenses || true
+          yes | $SDKMANAGER --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;33.0.2" "build-tools;33.0.1" || true
+
+      - name: Build Final APK
         run: |
           buildozer android debug
 
-      - name: Upload Final APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Knight-Saver-APK-Ready-To-Sell
+          name: Knight-Saver-APK-FINAL-FIXED
           path: bin/*.apk
