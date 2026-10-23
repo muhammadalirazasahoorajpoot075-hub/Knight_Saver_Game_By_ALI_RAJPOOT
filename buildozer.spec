@@ -9,7 +9,7 @@ requirements = python3,kivy==2.3.0,pygame
 orientation = landscape
 
 [buildozer]
-log_level = 1
+log_level = 2
 
 [buildozer:android]
 android.api = 33
