@@ -16,31 +16,33 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install -y openjdk-17-jdk python3-pip zip unzip libffi-dev libssl-dev
+          sudo apt install -y openjdk-17-jdk python3-pip zip unzip libffi-dev libssl-dev libbz2-dev libltdl-dev
 
       - name: Install Buildozer
         run: |
           pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Fix Aidl & License Issue (Final Fix)
+      - name: Fix Licenses
         run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          # Pehli baar SDK download karne do, license error ayega to ignore karo
           buildozer android debug || true
-          # Ab usi SDK ka license accept karo
-          SDKMANAGER=$(find ~/.buildozer -name sdkmanager -type f | head -n 1)
-          echo "Found sdkmanager at: $SDKMANAGER"
-          yes | $SDKMANAGER --licenses || true
-          yes | $SDKMANAGER --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;33.0.2" "build-tools;33.0.1" || true
+          SDK=$(find ~/.buildozer -name sdkmanager -type f | head -n 1)
+          yes | $SDK --licenses || true
+          yes | $SDK --sdk_root=/home/runner/.buildozer/android/platform/android-sdk "build-tools;33.0.2" "platform-tools" || true
 
       - name: Build Final APK
         run: |
+          SDK=$(find ~/.buildozer -name sdkmanager -type f | head -n 1)
+          yes | $SDK --licenses || true
           buildozer android debug
 
-      - name: Upload APK
+      - name: Upload APK or Log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Knight-Saver-APK-FINAL-FIXED
-          path: bin/*.apk
+          name: Build-Output
+          path: |
+            bin/
+            .buildozer/logs/
