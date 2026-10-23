@@ -25,20 +25,20 @@ jobs:
 
       - name: Setup Android SDK Manual
         run: |
+          rm -rf ~/.buildozer/android
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
-          mkdir -p ~/.buildozer/android/platform/android-sdk/cmdline-tools
-          cd ~/.buildozer/android/platform/android-sdk/cmdline-tools
+          mkdir -p /tmp/sdk
+          cd /tmp/sdk
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip -q commandlinetools-linux-11076708_latest.zip
-          mv cmdline-tools latest
-          mkdir -p latest/cmdline-tools
-          mv latest/bin latest/lib latest/NOTICE.txt latest/source.properties latest/cmdline-tools/ 2>/dev/null || true
-          # PATH set
+          mkdir -p $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest
+          mv cmdline-tools/* $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
-          $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools" "platforms;android-33" "ndk;28c"
-          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses
-
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+          yes | sdkmanager --licenses
+          sdkmanager --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools" "platforms;android-33" "ndk;28c"background: 
+          
       - name: Build APK
         run: |
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
