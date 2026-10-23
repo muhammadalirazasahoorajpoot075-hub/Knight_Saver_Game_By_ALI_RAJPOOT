@@ -45,7 +45,7 @@ jobs:
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
           java -version
           yes | sdkmanager --licenses
-          sdkmanager --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools" "platforms;android-33" "ndk;28c"
+                    sdkmanager --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools" "platforms;android-33"
 
       - name: Build APK
         run: |
