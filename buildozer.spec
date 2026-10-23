@@ -5,11 +5,11 @@ package.domain = com.ali.knightsaver
 source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,ttf
 version = 1.0
-requirements = python3,kivy==2.3.0
+requirements = python3,kivy==2.3.0,pygame
 orientation = landscape
 
 [buildozer]
-log_level = 1
+log_level = 2
 
 [buildozer:android]
 android.api = 33
