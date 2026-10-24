@@ -19,20 +19,21 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install System Deps
+      - name: Install Deps
         run: |
           sudo apt update
           sudo apt install -y zip unzip libffi-dev libssl-dev
-          java -version
-
-      - name: Install Buildozer
-        run: |
-          pip install --upgrade pip
           pip install buildozer cython==0.29.33
 
-      - name: Setup Android SDK Manual
+      - name: Clean Old SDK
         run: |
-          rm -rf ~/.buildozer/android
+          rm -rf ~/.buildozer
+          rm -rf /usr/local/lib/android/sdk/ndk/* || true
+          unset ANDROID_NDK_HOME
+          unset ANDROID_NDK_ROOT
+
+      - name: Setup Android SDK
+        run: |
           mkdir -p ~/.android
           touch ~/.android/repositories.cfg
           mkdir -p /tmp/sdk
@@ -43,23 +44,28 @@ jobs:
           mv cmdline-tools/* $HOME/.buildozer/android/platform/android-sdk/cmdline-tools/latest/
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
           export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
-          java -version
           yes | sdkmanager --licenses
-                    sdkmanager --install "build-tools;37.0.0" "build-tools;34.0.0" "platform-tools" "platforms;android-33"
-                              # Legacy path fix for Buildozer
+          sdkmanager --install "build-tools;34.0.0" "platform-tools" "platforms;android-33"
           mkdir -p $ANDROID_SDK_ROOT/tools/bin
           ln -sf $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager $ANDROID_SDK_ROOT/tools/bin/sdkmanager
-          ln -sf $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/avdmanager $ANDROID_SDK_ROOT/tools/bin/avdmanager || true
-          echo "SDK fix done"
 
       - name: Build APK
         run: |
           export ANDROID_SDK_ROOT=$HOME/.buildozer/android/platform/android-sdk
           export ANDROID_HOME=$ANDROID_SDK_ROOT
-          buildozer android debug
+          export ANDROID_NDK_HOME=$HOME/.buildozer/android/platform/android-ndk-r28c
+          buildozer android debug --verbose > build.log 2>&1 || (tail -n 500 build.log; exit 1)
 
       - name: Upload APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: Knight-Saver-APK
           path: bin/*.apk
+
+      - name: Upload FULL Log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-build-log
+          path: build.log
